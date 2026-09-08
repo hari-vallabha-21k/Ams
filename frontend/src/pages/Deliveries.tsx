@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import PassShare from "../components/PassShare";
+import DocumentScanner from "../components/DocumentScanner";
 import { Alert, Empty, Field, Modal, PageHeader, StatusBadge } from "../components/ui";
 import { api } from "../lib/api";
 import { formatDateTime, humanise, toIsoUtc, toLocalInput } from "../lib/format";
@@ -292,6 +293,7 @@ function DeliveryDetail({
   const [reference, setReference] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [scanning, setScanning] = useState(false);
 
   const upload = async (file: File) => {
     setBusy(true);
@@ -370,37 +372,43 @@ function DeliveryDetail({
                 onChange={(e) => setReference(e.target.value)}
               />
             </div>
-            <div className="mt-3 flex gap-2">
-              <label className="btn-secondary flex-1 cursor-pointer text-center">
-                <span>Upload soft copy</span>
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="application/pdf,image/png,image/jpeg"
-                  disabled={busy}
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    if (file) upload(file);
-                    event.target.value = "";
+            
+            {scanning ? (
+              <div className="mt-3">
+                <DocumentScanner
+                  onCapture={(file) => {
+                    setScanning(false);
+                    upload(file);
                   }}
+                  onCancel={() => setScanning(false)}
                 />
-              </label>
-              <label className="btn-secondary flex-1 cursor-pointer text-center">
-                <span>Scan hardcopy</span>
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  capture="environment"
+              </div>
+            ) : (
+              <div className="mt-3 flex gap-2">
+                <label className="btn-secondary flex-1 cursor-pointer text-center">
+                  <span>Upload soft copy</span>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="application/pdf,image/png,image/jpeg"
+                    disabled={busy}
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      if (file) upload(file);
+                      event.target.value = "";
+                    }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="btn-secondary flex-1 text-center"
                   disabled={busy}
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    if (file) upload(file);
-                    event.target.value = "";
-                  }}
-                />
-              </label>
-            </div>
+                  onClick={() => setScanning(true)}
+                >
+                  Scan hardcopy
+                </button>
+              </div>
+            )}
           </div>
 
           <button className="btn-danger" onClick={cancel} disabled={delivery.status === "CANCELLED"}>
