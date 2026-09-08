@@ -1,7 +1,7 @@
 # Company Gate Access & Visitor Management System
 
 A web application that controls entry and exit at company gates: employees,
-visitors and — as a first-class workflow — deliveries. It issues temporary QR
+visitors and - as a first-class workflow - deliveries. It issues temporary QR
 passes, verifies them at the gate against access policies, records every
 decision, and keeps a live list of who is inside.
 
