@@ -370,17 +370,37 @@ function DeliveryDetail({
                 onChange={(e) => setReference(e.target.value)}
               />
             </div>
-            <input
-              className="mt-2 block w-full text-sm"
-              type="file"
-              accept="application/pdf,image/png,image/jpeg"
-              disabled={busy}
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) upload(file);
-                event.target.value = "";
-              }}
-            />
+            <div className="mt-3 flex gap-2">
+              <label className="btn-secondary flex-1 cursor-pointer text-center">
+                <span>Upload soft copy</span>
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="application/pdf,image/png,image/jpeg"
+                  disabled={busy}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) upload(file);
+                    event.target.value = "";
+                  }}
+                />
+              </label>
+              <label className="btn-secondary flex-1 cursor-pointer text-center">
+                <span>Scan hardcopy</span>
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  capture="environment"
+                  disabled={busy}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) upload(file);
+                    event.target.value = "";
+                  }}
+                />
+              </label>
+            </div>
           </div>
 
           <button className="btn-danger" onClick={cancel} disabled={delivery.status === "CANCELLED"}>

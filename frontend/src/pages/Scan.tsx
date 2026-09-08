@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Alert, Field, PageHeader, StatusBadge } from "../components/ui";
+import QrScanner from "../components/QrScanner";
 import { api, download } from "../lib/api";
 import { formatDateTime, humanise } from "../lib/format";
 import { useGates, useMeta } from "../lib/hooks";
@@ -30,6 +31,7 @@ export default function Scan() {
   const [busy, setBusy] = useState(false);
   const [denyReason, setDenyReason] = useState("");
   const [denyNote, setDenyNote] = useState("");
+  const [scanning, setScanning] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -49,11 +51,13 @@ export default function Scan() {
     inputRef.current?.focus();
   };
 
-  const verify = async (event?: React.FormEvent) => {
+  const verify = async (event?: React.FormEvent, overrideRaw?: string) => {
     event?.preventDefault();
     if (!gateId) return;
-    const scanned = extractToken(raw);
+    const toScan = overrideRaw ?? raw;
+    const scanned = extractToken(toScan);
     if (!scanned) return;
+    if (overrideRaw) setRaw(overrideRaw);
     setBusy(true);
     setError(null);
     setNotice(null);
@@ -151,16 +155,36 @@ export default function Scan() {
             </div>
           </div>
 
-          <Field label="QR token or pass link" hint="Scan with a USB/handheld scanner or paste the link.">
-            <input
-              ref={inputRef}
-              className="input font-mono"
-              autoFocus
-              value={raw}
-              onChange={(event) => setRaw(event.target.value)}
-              placeholder="https://access.company.com/d/…"
-            />
+          <Field label="QR token or pass link" hint="Scan with a USB/handheld scanner, paste the link, or use camera.">
+            <div className="flex gap-2">
+              <input
+                ref={inputRef}
+                className="input font-mono flex-1"
+                autoFocus
+                value={raw}
+                onChange={(event) => setRaw(event.target.value)}
+                placeholder="https://access.company.com/d/…"
+              />
+              <button
+                type="button"
+                className="btn-secondary whitespace-nowrap"
+                onClick={() => setScanning(!scanning)}
+              >
+                {scanning ? "Stop camera" : "Use camera"}
+              </button>
+            </div>
           </Field>
+
+          {scanning && (
+            <div className="rounded-md bg-slate-50 p-3">
+              <QrScanner
+                onScan={(decodedText) => {
+                  setScanning(false);
+                  verify(undefined, decodedText);
+                }}
+              />
+            </div>
+          )}
 
           <div className="flex gap-2">
             <button className="btn-primary flex-1" disabled={busy || !raw || !gateId}>
